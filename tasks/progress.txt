@@ -1,0 +1,15 @@
+2026-05-14
+
+- Publicado GitHub publico: https://github.com/JoseWillians/design-model
+- Publicado deploy Vercel: https://design-model-two.vercel.app
+- Criado template em branco via src/lib/templateFactory.ts e integrado ao botao "Novo em branco".
+- Graphify rodado localmente:
+  - tentativa semantica com Ollama/qwen2.5-coder:3b excedeu timeout;
+  - fallback estrutural concluido com `graphify update . --force`;
+  - saidas locais ignoradas em graphify-out/: GRAPH_REPORT.md, graph.json, graph.html.
+- Validacoes executadas:
+  - npm run typecheck
+  - npm run build
+  - npm audit --audit-level=moderate
+  - validacao Playwright do fluxo de template em branco.
+- Observacao Vercel: deploy manual esta online; `vercel git connect` falhou ao tentar conectar o repositorio GitHub ao projeto Vercel. Revisar permissao/instalacao GitHub da Vercel depois.

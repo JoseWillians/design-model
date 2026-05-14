@@ -16,8 +16,8 @@
         "Verify in browser"
       ],
       "priority": 1,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Criado via src/lib/templateFactory.ts e integrado na UI com a acao Novo em branco. Validado no navegador com Playwright."
     },
     {
       "id": "US-002",
@@ -31,8 +31,8 @@
         "Typecheck passes"
       ],
       "priority": 2,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "README, CONTRIBUTING, ROADMAP, LICENSE, .gitignore, .graphifyignore e AGENTS.md criados/atualizados."
     },
     {
       "id": "US-003",
@@ -45,8 +45,8 @@
         "No secrets are included"
       ],
       "priority": 3,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Extracao semantica local via Ollama excedeu o timeout; graphify update . --force gerou grafo estrutural com 233 nodes, 295 edges e 15 communities."
     },
     {
       "id": "US-004",
@@ -59,8 +59,8 @@
         "Public deployment URL is documented in final handoff"
       ],
       "priority": 4,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Repositorio publico criado em GitHub e deploy de producao publicado na Vercel. Conexao automatica GitHub->Vercel falhou por permissao da integracao, mas deploy manual esta online."
     }
   ]
 }
