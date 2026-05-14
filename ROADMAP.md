@@ -1,0 +1,84 @@
+# Roadmap do Design Model
+
+Este roadmap organiza a evolucao publica do Design Model. Ele deve guiar contribuicoes, mas pode mudar conforme feedback de usuarios e maturidade do MVP.
+
+## Agora: estabilizacao do MVP
+
+Objetivo: tornar o editor atual confiavel, compreensivel e facil de validar.
+
+- Melhorar feedback visual de salvamento local.
+- Criar testes unitarios para exportacao JSON/CSS.
+- Criar testes unitarios para persistencia local.
+- Documentar o formato `TemplateDocument` com exemplos.
+- Refinar estados vazios e mensagens de erro.
+- Validar acessibilidade basica do canvas, camadas e inspector.
+- Melhorar responsividade em tablet e mobile.
+- Revisar contraste, foco visivel e navegacao por teclado.
+
+## Proximo: fluxo de templates
+
+Objetivo: facilitar criacao, reuso e organizacao de modelos.
+
+- Importar template a partir de JSON.
+- Expandir criacao de template em branco com dimensoes predefinidas selecionaveis.
+- Editar metadados do template: nome, descricao, categoria e tags.
+- Adicionar filtros por categoria e busca textual.
+- Adicionar presets de canvas para desktop, tablet, mobile, square e story.
+- Permitir ordenar ou agrupar camadas.
+- Criar exemplos publicos de templates por caso de uso.
+
+## Depois: editor visual mais completo
+
+Objetivo: dar mais controle sem perder simplicidade.
+
+- Controles de alinhamento e distribuicao.
+- Atalhos de teclado para duplicar, excluir e navegar entre camadas.
+- Undo/redo para operacoes principais.
+- Edicao de imagens com URL e texto alternativo.
+- Controles de borda, opacidade e sombra.
+- Bloquear e desbloquear camadas.
+- Reordenar camadas por drag and drop com alternativa acessivel.
+- Preview de diferentes tamanhos de tela.
+
+## Futuro: compartilhamento e colaboracao leve
+
+Objetivo: transformar templates em artefatos compartilhaveis.
+
+- Exportar imagem do canvas.
+- Compartilhar projeto por link estatico.
+- Gerar pacote de assets do template.
+- Historico simples de versoes locais.
+- Comentarios assincromos em nivel de template ou camada.
+- Organizacao por cliente, workspace ou colecao.
+- Sincronizacao opcional com backend.
+
+## Futuro tecnico
+
+Objetivo: preparar o projeto para escala, contribuicao e deploy continuo.
+
+- Configurar testes E2E com Playwright.
+- Adicionar CI para typecheck e build.
+- Adicionar lint/format quando o padrao for definido.
+- Publicar preview automatico em pull requests.
+- Documentar estrategia de versionamento.
+- Adicionar guia de arquitetura mais detalhado.
+- Criar exemplos de integracao com dados externos.
+
+## Fora do escopo imediato
+
+- Marketplace publico de templates.
+- Editor vetorial completo.
+- Colaboracao em tempo real.
+- Sistema avancado de permissoes.
+- Automacao de publicacao em producao.
+- Dependencia obrigatoria de servicos externos.
+
+## Como contribuir com o roadmap
+
+Abra uma issue ou pull request explicando:
+
+- qual problema a proposta resolve;
+- quem se beneficia;
+- como validar a entrega;
+- quais riscos ou impactos existem;
+- se a mudanca afeta dados exportados ou compatibilidade de templates.

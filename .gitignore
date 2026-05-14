@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.vercel/output/
+
+# Graphify outputs
+graphify-out/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Caches
+.cache/
+.parcel-cache/
+.vite/
+.turbo/
+.eslintcache
+*.tsbuildinfo
+
+# Test and coverage artifacts
+coverage/
+test-results/
+playwright-report/
+
+# Local IDE and OS files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# Vercel local state
+.vercel/

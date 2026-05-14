@@ -1,0 +1,66 @@
+{
+  "project": "Design Model",
+  "branchName": "launch/community-release",
+  "description": "Publicar o projeto como open-source, adicionar template em branco, gerar grafo Graphify e hospedar na Vercel.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Criar template em branco",
+      "description": "As a creator, I want to start from a blank canvas so that I can build my own visual template from scratch.",
+      "acceptanceCriteria": [
+        "A visible action creates a blank template",
+        "The new blank template appears in the templates list",
+        "The blank template can receive layers",
+        "Typecheck passes",
+        "Build passes",
+        "Verify in browser"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Preparar contribuicao open-source",
+      "description": "As a contributor, I want clear project documentation so that I can run, understand, and improve the app.",
+      "acceptanceCriteria": [
+        "README explains purpose, stack, install, scripts, architecture and contribution flow",
+        "CONTRIBUTING exists",
+        "ROADMAP exists",
+        "Open-source hygiene files exist",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Gerar grafo de conhecimento",
+      "description": "As a maintainer, I want a knowledge graph so that architecture and relationships are easier to inspect.",
+      "acceptanceCriteria": [
+        ".graphifyignore excludes generated and sensitive files",
+        "Graphify extraction completes",
+        "graphify-out/GRAPH_REPORT.md exists",
+        "No secrets are included"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Publicar GitHub e Vercel",
+      "description": "As an external user, I want the project online so that I can access it without local setup.",
+      "acceptanceCriteria": [
+        "Git repository is initialized",
+        "Repository is published on GitHub",
+        "Vercel deployment succeeds",
+        "Public deployment URL is documented in final handoff"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}

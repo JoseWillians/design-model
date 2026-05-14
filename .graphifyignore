@@ -1,0 +1,41 @@
+# Dependencies and package manager internals
+node_modules/
+.pnpm-store/
+
+# Build outputs and deploy artifacts
+dist/
+build/
+.vercel/
+graphify-out/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.crt
+*.cert
+
+# Caches and generated reports
+.cache/
+.vite/
+.turbo/
+coverage/
+test-results/
+playwright-report/
+*.tsbuildinfo
+*.log
+
+# Binary/media artifacts that do not help code understanding by default
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.ico
+*.mp4
+*.zip
+*.tar
+*.gz
