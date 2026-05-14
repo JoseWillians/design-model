@@ -4,6 +4,11 @@ Design Model e um editor web open-source para criar, adaptar e exportar template
 
 O projeto combina uma biblioteca inicial de templates com um canvas editavel, camadas selecionaveis, painel de propriedades e exportacao em formatos simples para validacao ou inicio de implementacao.
 
+## Links
+
+- Demo online: https://design-model-two.vercel.app
+- Repositorio: https://github.com/JoseWillians/design-model
+
 ## Visao
 
 A visao do Design Model e ser uma ferramenta leve, local-first e extensivel para prototipar estruturas visuais sem friccao. O foco nao e substituir ferramentas profissionais completas, mas entregar um ponto de partida claro para equipes, devs, designers, produto e pequenos negocios alinharem ideias antes de investir em desenvolvimento detalhado.
@@ -147,6 +152,8 @@ O exportador CSS gera:
 - classes absolutas para cada camada renderizavel.
 
 ## Deploy na Vercel
+
+Deploy atual: https://design-model-two.vercel.app
 
 O projeto e uma aplicacao Vite estatica. Para publicar na Vercel:
 
