@@ -1,66 +1,107 @@
 {
   "project": "Design Model",
-  "branchName": "launch/community-release",
-  "description": "Publicar o projeto como open-source, adicionar template em branco, gerar grafo Graphify e hospedar na Vercel.",
+  "branchName": "ralph/canvas-direct-manipulation",
+  "description": "Evoluir o editor com manipulacao direta no canvas, presets de tamanho e uma base priorizada de melhorias futuras.",
   "userStories": [
     {
       "id": "US-001",
-      "title": "Criar template em branco",
-      "description": "As a creator, I want to start from a blank canvas so that I can build my own visual template from scratch.",
+      "title": "Mover camada por arraste",
+      "description": "As a creator, I want to drag a selected layer on the canvas so that I can reposition it without editing numeric fields.",
       "acceptanceCriteria": [
-        "A visible action creates a blank template",
-        "The new blank template appears in the templates list",
-        "The blank template can receive layers",
+        "Dragging a selected renderable layer updates its x and y values",
+        "The inspector reflects the new x and y values after drag",
+        "Dragging keeps the layer inside the canvas bounds or clamps it predictably",
+        "Selection remains active after the drag ends",
         "Typecheck passes",
         "Build passes",
         "Verify in browser"
       ],
       "priority": 1,
       "passes": true,
-      "notes": "Criado via src/lib/templateFactory.ts e integrado na UI com a acao Novo em branco. Validado no navegador com Playwright."
+      "notes": "Camadas renderizaveis podem ser arrastadas no canvas; delta considera zoom, aplica clamp e atualiza inspector/persistencia no fim do gesto."
     },
     {
       "id": "US-002",
-      "title": "Preparar contribuicao open-source",
-      "description": "As a contributor, I want clear project documentation so that I can run, understand, and improve the app.",
+      "title": "Redimensionar camada por alcas",
+      "description": "As a creator, I want resize handles on the selected layer so that I can adjust width and height visually.",
       "acceptanceCriteria": [
-        "README explains purpose, stack, install, scripts, architecture and contribution flow",
-        "CONTRIBUTING exists",
-        "ROADMAP exists",
-        "Open-source hygiene files exist",
-        "Typecheck passes"
+        "A selected renderable layer shows visible resize handles",
+        "Dragging a resize handle updates width and height values",
+        "Minimum width and height prevent invalid or invisible layers",
+        "The inspector reflects the new dimensions after resize",
+        "Typecheck passes",
+        "Build passes",
+        "Verify in browser"
       ],
       "priority": 2,
       "passes": true,
-      "notes": "README, CONTRIBUTING, ROADMAP, LICENSE, .gitignore, .graphifyignore e AGENTS.md criados/atualizados."
+      "notes": "Camada selecionada mostra oito alcas de resize. Drag nas alcas atualiza width/height com tamanho minimo e clamp no canvas."
     },
     {
       "id": "US-003",
-      "title": "Gerar grafo de conhecimento",
-      "description": "As a maintainer, I want a knowledge graph so that architecture and relationships are easier to inspect.",
+      "title": "Adicionar snap e nudges",
+      "description": "As a creator, I want grid snap and keyboard nudges so that I can align layers with predictable precision.",
       "acceptanceCriteria": [
-        ".graphifyignore excludes generated and sensitive files",
-        "Graphify extraction completes",
-        "graphify-out/GRAPH_REPORT.md exists",
-        "No secrets are included"
+        "Arrow keys move the selected layer by a small fixed step",
+        "Shift plus arrow keys move the selected layer by a larger fixed step",
+        "When snap is enabled, drag and keyboard movement align to the configured grid size",
+        "The UI exposes whether snap is enabled",
+        "Typecheck passes",
+        "Build passes",
+        "Verify in browser"
       ],
       "priority": 3,
       "passes": true,
-      "notes": "Extracao semantica local via Ollama excedeu o timeout; graphify update . --force gerou grafo estrutural com 233 nodes, 295 edges e 15 communities."
+      "notes": "Snap pode ser ativado/desativado na toolbar. Setas movem camada selecionada; Shift aumenta o passo."
     },
     {
       "id": "US-004",
-      "title": "Publicar GitHub e Vercel",
-      "description": "As an external user, I want the project online so that I can access it without local setup.",
+      "title": "Selecionar presets de canvas",
+      "description": "As a creator, I want common canvas presets so that I can start from desktop, tablet, mobile, or custom dimensions.",
       "acceptanceCriteria": [
-        "Git repository is initialized",
-        "Repository is published on GitHub",
-        "Vercel deployment succeeds",
-        "Public deployment URL is documented in final handoff"
+        "The canvas toolbar or inspector exposes preset options for desktop, tablet, mobile and custom",
+        "Choosing a preset updates canvas width and height",
+        "Choosing custom preserves manually edited dimensions",
+        "Existing templates continue to load with their current canvas dimensions",
+        "Typecheck passes",
+        "Build passes",
+        "Verify in browser"
       ],
       "priority": 4,
+      "passes": false,
+      "notes": "Presets desktop/tablet/mobile/square/story foram adicionados para novo template e canvas atual. Dimensoes customizadas ainda pendentes."
+    },
+    {
+      "id": "US-005",
+      "title": "Persistir e exportar preset",
+      "description": "As a creator, I want the selected canvas preset saved and exported so that the template keeps its intended format across sessions.",
+      "acceptanceCriteria": [
+        "The selected preset persists after page reload through local storage",
+        "JSON export includes the canvas preset value",
+        "CSS export keeps using the saved canvas dimensions",
+        "Templates without an explicit preset still load with a safe fallback",
+        "Typecheck passes",
+        "Build passes",
+        "Verify in browser"
+      ],
+      "priority": 5,
       "passes": true,
-      "notes": "Repositorio publico criado em GitHub e deploy de producao publicado na Vercel. Conexao automatica GitHub->Vercel falhou por permissao da integracao, mas deploy manual esta online."
+      "notes": "Preset fica em selectedTemplate.canvas.preset, persiste em localStorage e entra no JSON exportado. CSS continua usando dimensoes salvas."
+    },
+    {
+      "id": "US-006",
+      "title": "Preparar backlog de melhorias futuras",
+      "description": "As a maintainer, I want future canvas improvements captured as small candidates so that the next planning round is easier to prioritize.",
+      "acceptanceCriteria": [
+        "The implementation notes or product task file lists at least five future canvas improvements",
+        "Each future improvement is written as a small, independently testable candidate",
+        "The list includes undo or redo, smart guides, layer lock, multi-select grouping and JSON import",
+        "No source code changes are required for this story",
+        "Typecheck is not required unless code changes are introduced"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": "Backlog capturado no PRD e ROADMAP: dimensoes customizadas, undo/redo, smart guides, layer lock, multi-select/grouping e JSON import."
     }
   ]
 }

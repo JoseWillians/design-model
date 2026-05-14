@@ -9,6 +9,7 @@ Objetivo: tornar o editor atual confiavel, compreensivel e facil de validar.
 - Melhorar feedback visual de salvamento local.
 - Criar testes unitarios para exportacao JSON/CSS.
 - Criar testes unitarios para persistencia local.
+- Criar testes unitarios para helpers de geometria do canvas.
 - Documentar o formato `TemplateDocument` com exemplos.
 - Refinar estados vazios e mensagens de erro.
 - Validar acessibilidade basica do canvas, camadas e inspector.
@@ -20,7 +21,7 @@ Objetivo: tornar o editor atual confiavel, compreensivel e facil de validar.
 Objetivo: facilitar criacao, reuso e organizacao de modelos.
 
 - Importar template a partir de JSON.
-- Expandir criacao de template em branco com dimensoes predefinidas selecionaveis.
+- Permitir dimensoes customizadas de canvas alem dos presets atuais.
 - Editar metadados do template: nome, descricao, categoria e tags.
 - Adicionar filtros por categoria e busca textual.
 - Adicionar presets de canvas para desktop, tablet, mobile, square e story.
@@ -32,6 +33,7 @@ Objetivo: facilitar criacao, reuso e organizacao de modelos.
 Objetivo: dar mais controle sem perder simplicidade.
 
 - Controles de alinhamento e distribuicao.
+- Smart guides para alinhar camadas entre si.
 - Atalhos de teclado para duplicar, excluir e navegar entre camadas.
 - Undo/redo para operacoes principais.
 - Edicao de imagens com URL e texto alternativo.

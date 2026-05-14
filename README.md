@@ -27,6 +27,9 @@ Principios do produto:
 - Templates para dashboard, catalogo e fluxo mobile.
 - Criacao de template em branco para montar uma composicao do zero.
 - Canvas com zoom, grid visual e selecao por clique ou teclado.
+- Manipulacao direta no canvas: arrastar camadas e redimensionar por alcas.
+- Snap de grade ativavel e movimento fino por teclado.
+- Presets de canvas para desktop, tablet, mobile, square e story.
 - Camadas de texto, imagem, formas e grupos.
 - Inspector para editar nome, texto, posicao, tamanho, cor, raio, fonte, peso e alinhamento.
 - Adicao de novas camadas de texto, retangulo, elipse e imagem.
@@ -51,9 +54,11 @@ Exemplo de fluxo:
 1. Escolha um modelo inicial ou clique em "Novo em branco".
 2. Adicione texto, retangulos, elipses ou areas de imagem.
 3. Selecione uma camada no canvas ou na lista de camadas.
-4. Ajuste texto, medidas, cores e estilo no inspector.
-5. Duplique uma camada ou o template para criar variacoes.
-6. Exporte o resultado em JSON ou CSS.
+4. Arraste a camada no canvas ou redimensione pelas alcas.
+5. Use Snap e setas do teclado para ajustes precisos.
+6. Ajuste texto, medidas, cores e estilo no inspector.
+7. Duplique uma camada ou o template para criar variacoes.
+8. Exporte o resultado em JSON ou CSS.
 
 ## Stack
 
@@ -124,6 +129,7 @@ src/
     tokens.ts                # Tokens visuais do app
   lib/
     exporters.ts             # Exportacao JSON/CSS
+    layerGeometry.ts         # Snap, clamp, movimento e resize de camadas
     templateFactory.ts       # Criacao de templates em branco
     templateSeed.ts          # Templates iniciais
     templateStore.ts         # Persistencia local e operacoes de template

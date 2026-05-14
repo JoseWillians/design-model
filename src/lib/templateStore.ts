@@ -1,5 +1,5 @@
 import { seedTemplates } from "./templateSeed";
-import type { TemplateCollection, TemplateDocument } from "./templateTypes";
+import type { DevicePreset, TemplateCanvas, TemplateCollection, TemplateDocument } from "./templateTypes";
 
 const STORAGE_KEY = "design-model.templates.v1";
 const COLLECTION_VERSION = 1;
@@ -16,6 +16,28 @@ const hasLocalStorage = () => typeof window !== "undefined" && typeof window.loc
 
 const cloneTemplate = (template: TemplateDocument): TemplateDocument => JSON.parse(JSON.stringify(template));
 
+const inferCanvasPreset = (canvas: Pick<TemplateCanvas, "width" | "height">): DevicePreset => {
+  if (canvas.width === 390 && canvas.height === 844) return "mobile";
+  if (canvas.width === 834 && canvas.height === 1112) return "tablet";
+  if (canvas.width === 1080 && canvas.height === 1080) return "square";
+  if (canvas.width === 1080 && canvas.height === 1920) return "story";
+  return "desktop";
+};
+
+const normalizeTemplate = (template: TemplateDocument): TemplateDocument => {
+  const cloned = cloneTemplate(template);
+
+  return {
+    ...cloned,
+    canvas: {
+      ...cloned.canvas,
+      preset: cloned.canvas.preset ?? inferCanvasPreset(cloned.canvas),
+      gridSize: cloned.canvas.gridSize || 8,
+      background: cloned.canvas.background || "#f6f7fb",
+    },
+  };
+};
+
 const createId = (prefix = "template") => {
   const randomPart =
     typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -27,7 +49,7 @@ const createId = (prefix = "template") => {
 
 const normalizeCollection = (collection: TemplateCollection): TemplateCollection => ({
   version: COLLECTION_VERSION,
-  templates: collection.templates.map(cloneTemplate),
+  templates: collection.templates.map(normalizeTemplate),
 });
 
 export const createSeedCollection = (): TemplateCollection => ({

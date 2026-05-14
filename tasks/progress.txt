@@ -13,3 +13,26 @@
   - npm audit --audit-level=moderate
   - validacao Playwright do fluxo de template em branco.
 - Observacao Vercel: deploy manual esta online; `vercel git connect` falhou ao tentar conectar o repositorio GitHub ao projeto Vercel. Revisar permissao/instalacao GitHub da Vercel depois.
+
+2026-05-14 - Rodada manipulacao direta
+
+- Adicionado movimento direto de camadas no canvas por arraste.
+- Adicionadas alcas de redimensionamento para camada selecionada.
+- Adicionado snap de grade ativavel/desativavel na toolbar.
+- Adicionado movimento por teclado com setas; Shift aumenta o passo.
+- Adicionados presets de canvas: desktop, tablet, mobile, square e story.
+- Novo template em branco pode nascer em preset selecionado.
+- Criado helper puro `src/lib/layerGeometry.ts` para clamp, snap, move e resize.
+- Validacoes executadas:
+  - npm run typecheck
+  - npm run build
+  - Playwright: drag, resize, preset mobile, snap e nudge por teclado.
+- Pendente: dimensoes customizadas de canvas e testes unitarios automatizados para geometria.
+- Revisao multiagente apontou risco em resize de camadas aninhadas, snap alterando tamanho durante move, resize no limite e fallback de preset.
+- Correcoes aplicadas:
+  - overlay unico de selecao no canvas para evitar bubbling entre filhos e grupos;
+  - snap de posicao separado do snap de tamanho;
+  - resize com borda oposta preservada no limite do canvas;
+  - fallback de `canvas.preset` ao carregar templates antigos;
+  - alcas com alvo de ponteiro maior.
+- Validacao final Playwright passou para drag, resize, snap fino, preset persistente e smoke mobile.

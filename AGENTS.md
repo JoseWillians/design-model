@@ -28,4 +28,5 @@
 
 - O README atual define `npm run build` como validacao minima antes de concluir mudancas.
 - Mudancas visuais relevantes devem ser conferidas em desktop e mobile.
+- Manipulacao direta do canvas deve preservar a alternativa numerica do inspector e validar zoom, snap e teclado.
 - Este arquivo deve guardar apenas contexto especifico do projeto, sem duplicar as instrucoes globais do ambiente.

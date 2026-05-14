@@ -1,5 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
-import type { CSSProperties, KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type {
+  CSSProperties,
+  KeyboardEvent,
+  MouseEvent as ReactMouseEvent,
+  PointerEvent as ReactPointerEvent,
+} from "react";
 import {
   Box,
   Circle,
@@ -22,7 +27,20 @@ import { Panel } from "./components/Panel";
 import { PropertyField } from "./components/PropertyField";
 import { TemplateCard } from "./components/TemplateCard";
 import { exportTemplateAsCss, exportTemplateAsJson, createDownloadUrl } from "./lib/exporters";
-import { createBlankTemplate } from "./lib/templateFactory";
+import {
+  clampBounds,
+  clampResizedBounds,
+  moveBounds,
+  resizeBounds,
+  snapBounds,
+  snapPositionBounds,
+  type ResizeHandle,
+} from "./lib/layerGeometry";
+import {
+  createBlankTemplate,
+  createBlankTemplateCanvas,
+  type BlankTemplatePreset,
+} from "./lib/templateFactory";
 import {
   createTemplate,
   deleteTemplate,
@@ -33,11 +51,40 @@ import {
 } from "./lib/templateStore";
 import type {
   FontWeight,
+  DevicePreset,
   ShapeKind,
   TemplateDocument,
+  LayerBounds,
   TemplateLayer,
   TextAlign,
 } from "./lib/templateTypes";
+
+const MIN_LAYER_SIZE = 16;
+const RESIZE_HANDLES: ResizeHandle[] = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
+const CANVAS_PRESETS: Array<{ value: BlankTemplatePreset; label: string }> = [
+  { value: "desktop", label: "Desktop" },
+  { value: "tablet", label: "Tablet" },
+  { value: "mobile", label: "Mobile" },
+  { value: "square", label: "Square" },
+  { value: "story", label: "Story" },
+];
+
+type CanvasInteraction =
+  | {
+      mode: "move";
+      layerId: string;
+      startBounds: LayerBounds;
+      startClientX: number;
+      startClientY: number;
+    }
+  | {
+      mode: "resize";
+      layerId: string;
+      handle: ResizeHandle;
+      startBounds: LayerBounds;
+      startClientX: number;
+      startClientY: number;
+    };
 
 const createId = (prefix: string) =>
   `${prefix}-${typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Date.now()}`;
@@ -149,7 +196,12 @@ function App() {
   const [selectedTemplateId, setSelectedTemplateId] = useState(() => templates[0]?.metadata.id ?? "");
   const [selectedLayerId, setSelectedLayerId] = useState("");
   const [zoom, setZoom] = useState(0.64);
+  const [snapEnabled, setSnapEnabled] = useState(true);
+  const [blankPreset, setBlankPreset] = useState<BlankTemplatePreset>("desktop");
   const [notice, setNotice] = useState("Sessao pronta para criar.");
+  const [interaction, setInteraction] = useState<CanvasInteraction | null>(null);
+  const [previewBoundsByLayerId, setPreviewBoundsByLayerId] = useState<Record<string, LayerBounds>>({});
+  const suppressLayerClickRef = useRef(false);
 
   const selectedTemplate = useMemo(
     () => templates.find((template) => template.metadata.id === selectedTemplateId) ?? templates[0],
@@ -181,6 +233,111 @@ function App() {
     };
     syncTemplate(nextTemplate);
   };
+
+  const clampLayerTreeToCanvas = (layersToClamp: TemplateLayer[], canvas: TemplateDocument["canvas"]): TemplateLayer[] =>
+    layersToClamp.map((layer) => ({
+      ...layer,
+      bounds: clampBounds(layer.bounds, {
+        canvas,
+        minWidth: MIN_LAYER_SIZE,
+        minHeight: MIN_LAYER_SIZE,
+      }),
+      children: layer.children ? clampLayerTreeToCanvas(layer.children, canvas) : layer.children,
+    }) as TemplateLayer);
+
+  const clampLayerBounds = (bounds: LayerBounds) => {
+    if (!selectedTemplate) return bounds;
+
+    return clampBounds(bounds, {
+      canvas: selectedTemplate.canvas,
+      minWidth: MIN_LAYER_SIZE,
+      minHeight: MIN_LAYER_SIZE,
+    });
+  };
+
+  const commitLayerBounds = (layerId: string, bounds: LayerBounds) => {
+    patchLayer(layerId, (layer) => ({
+      ...layer,
+      bounds: clampLayerBounds(bounds),
+    }));
+  };
+
+  useEffect(() => {
+    if (!interaction || !selectedTemplate) return;
+
+    const getNextBounds = (event: PointerEvent) => {
+      const delta = {
+        dx: (event.clientX - interaction.startClientX) / zoom,
+        dy: (event.clientY - interaction.startClientY) / zoom,
+      };
+      const rawBounds =
+        interaction.mode === "move"
+          ? moveBounds(interaction.startBounds, delta)
+          : resizeBounds(interaction.startBounds, interaction.handle, delta, {
+              minWidth: MIN_LAYER_SIZE,
+              minHeight: MIN_LAYER_SIZE,
+            });
+      const adjustedBounds =
+        interaction.mode === "move"
+          ? snapEnabled
+            ? snapPositionBounds(rawBounds, selectedTemplate.canvas.gridSize)
+            : rawBounds
+          : snapEnabled
+            ? snapBounds(rawBounds, selectedTemplate.canvas.gridSize)
+            : rawBounds;
+
+      if (interaction.mode === "resize") {
+        return clampResizedBounds(interaction.startBounds, adjustedBounds, interaction.handle, {
+          canvas: selectedTemplate.canvas,
+          minWidth: MIN_LAYER_SIZE,
+          minHeight: MIN_LAYER_SIZE,
+        });
+      }
+
+      return clampBounds(adjustedBounds, {
+        canvas: selectedTemplate.canvas,
+        minWidth: MIN_LAYER_SIZE,
+        minHeight: MIN_LAYER_SIZE,
+      });
+    };
+
+    const handlePointerMove = (event: PointerEvent) => {
+      event.preventDefault();
+      const nextBounds = getNextBounds(event);
+
+      setPreviewBoundsByLayerId((current) => ({
+        ...current,
+        [interaction.layerId]: nextBounds,
+      }));
+    };
+
+    const finishInteraction = (event: PointerEvent) => {
+      const nextBounds = getNextBounds(event);
+
+      commitLayerBounds(interaction.layerId, nextBounds);
+      setSelectedLayerId(interaction.layerId);
+      setPreviewBoundsByLayerId((current) => {
+        const { [interaction.layerId]: _removed, ...rest } = current;
+        return rest;
+      });
+      suppressLayerClickRef.current = true;
+      window.setTimeout(() => {
+        suppressLayerClickRef.current = false;
+      }, 120);
+      setInteraction(null);
+      setNotice(interaction.mode === "move" ? "Camada reposicionada." : "Camada redimensionada.");
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", finishInteraction, { once: true });
+    window.addEventListener("pointercancel", finishInteraction, { once: true });
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", finishInteraction);
+      window.removeEventListener("pointercancel", finishInteraction);
+    };
+  }, [interaction, selectedTemplate, snapEnabled, zoom]);
 
   const addLayer = (type: "text" | "rectangle" | "ellipse" | "image") => {
     if (!selectedTemplate) return;
@@ -235,11 +392,27 @@ function App() {
   };
 
   const createBlankTemplateFromScratch = () => {
-    const blankTemplate = createTemplate(createBlankTemplate());
+    const blankTemplate = createTemplate(createBlankTemplate({ canvas: { preset: blankPreset } }));
     setTemplates(listTemplates());
     setSelectedTemplateId(blankTemplate.metadata.id);
     setSelectedLayerId("");
     setNotice("Template em branco criado. Adicione camadas para comecar.");
+  };
+
+  const updateCanvasPreset = (preset: DevicePreset) => {
+    if (!selectedTemplate) return;
+    const canvas = createBlankTemplateCanvas({
+      preset,
+      background: selectedTemplate.canvas.background,
+      gridSize: selectedTemplate.canvas.gridSize,
+    });
+
+    syncTemplate({
+      ...selectedTemplate,
+      canvas,
+      layers: clampLayerTreeToCanvas(selectedTemplate.layers, canvas),
+    });
+    setNotice(`Canvas atualizado para ${preset}.`);
   };
 
   const removeCurrentTemplate = () => {
@@ -276,44 +449,120 @@ function App() {
   };
 
   const updateBounds = (field: keyof TemplateLayer["bounds"], value: number) => {
-    if (!selectedLayer) return;
+    if (!selectedLayer || !selectedTemplate) return;
+    const nextBounds = clampBounds(
+      { ...selectedLayer.bounds, [field]: Number.isFinite(value) ? value : 0 },
+      {
+        canvas: selectedTemplate.canvas,
+        minWidth: MIN_LAYER_SIZE,
+        minHeight: MIN_LAYER_SIZE,
+      },
+    );
+
     patchLayer(selectedLayer.id, (layer) => ({
       ...layer,
-      bounds: { ...layer.bounds, [field]: Number.isFinite(value) ? value : 0 },
+      bounds: nextBounds,
     }));
   };
 
-  const selectLayerFromKeyboard = (event: KeyboardEvent<HTMLDivElement>, layerId: string) => {
-    if (event.key !== "Enter" && event.key !== " ") return;
+  const handleLayerKeyboard = (event: KeyboardEvent<HTMLDivElement>, layer: TemplateLayer) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      setSelectedLayerId(layer.id);
+      return;
+    }
+
+    if (!selectedTemplate || layer.locked || !event.key.startsWith("Arrow")) return;
+
+    const step = snapEnabled
+      ? event.shiftKey
+        ? selectedTemplate.canvas.gridSize * 4
+        : selectedTemplate.canvas.gridSize
+      : event.shiftKey
+        ? 10
+        : 1;
+    const delta = {
+      dx: event.key === "ArrowRight" ? step : event.key === "ArrowLeft" ? -step : 0,
+      dy: event.key === "ArrowDown" ? step : event.key === "ArrowUp" ? -step : 0,
+    };
+
     event.preventDefault();
+    setSelectedLayerId(layer.id);
+    const movedBounds = moveBounds(layer.bounds, delta);
+    const adjustedBounds = snapEnabled ? snapPositionBounds(movedBounds, selectedTemplate.canvas.gridSize) : movedBounds;
+
+    commitLayerBounds(layer.id, adjustedBounds);
+    setNotice("Camada movida pelo teclado.");
+  };
+
+  const startCanvasInteraction = (
+    event: ReactPointerEvent<HTMLElement>,
+    layer: TemplateLayer,
+    mode: "move" | "resize",
+    handle?: ResizeHandle,
+  ) => {
+    if (event.button !== 0 || layer.locked) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setSelectedLayerId(layer.id);
+    setInteraction(
+      mode === "move"
+        ? {
+            mode,
+            layerId: layer.id,
+            startBounds: layer.bounds,
+            startClientX: event.clientX,
+            startClientY: event.clientY,
+          }
+        : {
+            mode,
+            handle: handle ?? "se",
+            layerId: layer.id,
+            startBounds: layer.bounds,
+            startClientX: event.clientX,
+            startClientY: event.clientY,
+          },
+    );
+  };
+
+  const selectLayerFromClick = (event: ReactMouseEvent<HTMLDivElement>, layerId: string) => {
+    event.stopPropagation();
+
+    if (suppressLayerClickRef.current) {
+      return;
+    }
+
     setSelectedLayerId(layerId);
   };
 
   const renderLayer = (layer: TemplateLayer): JSX.Element | null => {
     if (!layer.visible) return null;
     const isSelected = layer.id === selectedLayerId;
+    const effectiveBounds = previewBoundsByLayerId[layer.id] ?? layer.bounds;
+    const layerClassName = ["canvas-layer", isSelected ? "canvas-layer--selected" : "", interaction?.layerId === layer.id ? "canvas-layer--dragging" : ""]
+      .filter(Boolean)
+      .join(" ");
     const baseStyle: CSSProperties = {
       position: "absolute",
-      left: layer.bounds.x,
-      top: layer.bounds.y,
-      width: layer.bounds.width,
-      height: layer.bounds.height,
-      transform: layer.bounds.rotation ? `rotate(${layer.bounds.rotation}deg)` : undefined,
+      left: effectiveBounds.x,
+      top: effectiveBounds.y,
+      width: effectiveBounds.width,
+      height: effectiveBounds.height,
+      transform: effectiveBounds.rotation ? `rotate(${effectiveBounds.rotation}deg)` : undefined,
       opacity: layer.style?.opacity,
       mixBlendMode: layer.style?.blendMode,
       boxShadow: layer.style?.shadow,
       borderRadius: layer.style?.radius,
-      outline: isSelected ? "2px solid #2563eb" : undefined,
-      outlineOffset: isSelected ? 2 : undefined,
     };
 
     if (layer.type === "text") {
       return (
         <div
-          className="canvas-layer canvas-layer--text"
+          className={`${layerClassName} canvas-layer--text`}
           key={layer.id}
-          onClick={() => setSelectedLayerId(layer.id)}
-          onKeyDown={(event) => selectLayerFromKeyboard(event, layer.id)}
+          onClick={(event) => selectLayerFromClick(event, layer.id)}
+          onKeyDown={(event) => handleLayerKeyboard(event, layer)}
+          onPointerDown={(event) => startCanvasInteraction(event, layer, "move")}
           role="button"
           style={{
             ...baseStyle,
@@ -336,10 +585,11 @@ function App() {
       return (
         <div
           aria-label={`Selecionar camada ${layer.name}`}
-          className="canvas-layer canvas-layer--image"
+          className={`${layerClassName} canvas-layer--image`}
           key={layer.id}
-          onClick={() => setSelectedLayerId(layer.id)}
-          onKeyDown={(event) => selectLayerFromKeyboard(event, layer.id)}
+          onClick={(event) => selectLayerFromClick(event, layer.id)}
+          onKeyDown={(event) => handleLayerKeyboard(event, layer)}
+          onPointerDown={(event) => startCanvasInteraction(event, layer, "move")}
           role="button"
           style={{
             ...baseStyle,
@@ -363,15 +613,42 @@ function App() {
     return (
       <div
         aria-label={`Selecionar camada ${layer.name}`}
-        className="canvas-layer"
+        className={layerClassName}
         key={layer.id}
-        onClick={() => setSelectedLayerId(layer.id)}
-        onKeyDown={(event) => selectLayerFromKeyboard(event, layer.id)}
+        onClick={(event) => selectLayerFromClick(event, layer.id)}
+        onKeyDown={(event) => handleLayerKeyboard(event, layer)}
+        onPointerDown={(event) => startCanvasInteraction(event, layer, "move")}
         role="button"
         style={layerStyle}
         tabIndex={0}
       >
         {layer.children?.map(renderLayer)}
+      </div>
+    );
+  };
+
+  const renderSelectionOverlay = () => {
+    if (!selectedLayer || selectedLayer.locked) return null;
+    const bounds = previewBoundsByLayerId[selectedLayer.id] ?? selectedLayer.bounds;
+
+    return (
+      <div
+        aria-hidden="true"
+        className="selection-overlay"
+        style={{
+          left: bounds.x,
+          top: bounds.y,
+          width: bounds.width,
+          height: bounds.height,
+        }}
+      >
+        {RESIZE_HANDLES.map((handle) => (
+          <span
+            className={`resize-handle resize-handle--${handle}`}
+            key={handle}
+            onPointerDown={(event) => startCanvasInteraction(event, selectedLayer, "resize", handle)}
+          />
+        ))}
       </div>
     );
   };
@@ -424,10 +701,27 @@ function App() {
         <aside className="sidebar sidebar--left" aria-label="Templates e ferramentas">
           <Panel
             actions={
-              <button className="button button--compact" onClick={createBlankTemplateFromScratch} type="button">
-                <Plus size={15} />
-                Novo em branco
-              </button>
+              <div className="new-template-controls">
+                <label className="visually-hidden" htmlFor="blank-preset">
+                  Preset do novo template
+                </label>
+                <select
+                  className="compact-select"
+                  id="blank-preset"
+                  onChange={(event) => setBlankPreset(event.target.value as BlankTemplatePreset)}
+                  value={blankPreset}
+                >
+                  {CANVAS_PRESETS.map((preset) => (
+                    <option key={preset.value} value={preset.value}>
+                      {preset.label}
+                    </option>
+                  ))}
+                </select>
+                <button className="button button--compact" onClick={createBlankTemplateFromScratch} type="button">
+                  <Plus size={15} />
+                  Novo em branco
+                </button>
+              </div>
             }
             title="Templates"
             description="Escolha uma base ou comece do zero."
@@ -480,6 +774,31 @@ function App() {
               <h2>{selectedTemplate.metadata.name}</h2>
             </div>
             <div className="zoom-control">
+              <label htmlFor="canvas-preset">Canvas</label>
+              <select
+                className="compact-select"
+                id="canvas-preset"
+                onChange={(event) => updateCanvasPreset(event.target.value as DevicePreset)}
+                value={selectedTemplate.canvas.preset}
+              >
+                {CANVAS_PRESETS.map((preset) => (
+                  <option key={preset.value} value={preset.value}>
+                    {preset.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                aria-pressed={snapEnabled}
+                className={`button button--compact button--toggle ${snapEnabled ? "button--toggle-active" : ""}`}
+                onClick={() => {
+                  setSnapEnabled((current) => !current);
+                  setNotice(!snapEnabled ? "Snap na grade ativado." : "Snap na grade desativado.");
+                }}
+                type="button"
+              >
+                <Square size={14} />
+                Snap
+              </button>
               <MousePointer2 size={16} aria-hidden="true" />
               <label htmlFor="zoom">Zoom</label>
               <input
@@ -509,12 +828,13 @@ function App() {
                   width: selectedTemplate.canvas.width,
                   height: selectedTemplate.canvas.height,
                   transform: `scale(${zoom})`,
-                  background: selectedTemplate.canvas.background,
+                  backgroundColor: selectedTemplate.canvas.background,
                   backgroundImage: `linear-gradient(to right, rgba(15,23,42,.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(15,23,42,.06) 1px, transparent 1px)`,
                   backgroundSize: `${selectedTemplate.canvas.gridSize * 4}px ${selectedTemplate.canvas.gridSize * 4}px`,
                 }}
               >
                 {selectedTemplate.layers.map(renderLayer)}
+                {renderSelectionOverlay()}
               </div>
             </div>
           </div>
@@ -531,7 +851,7 @@ function App() {
                   className={`layer-row ${selectedLayerId === layer.id ? "layer-row--selected" : ""}`}
                   key={layer.id}
                   onClick={() => setSelectedLayerId(layer.id)}
-                  onKeyDown={(event) => selectLayerFromKeyboard(event, layer.id)}
+                  onKeyDown={(event) => handleLayerKeyboard(event, layer)}
                   role="button"
                   tabIndex={0}
                 >
