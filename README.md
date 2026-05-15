@@ -1,8 +1,8 @@
 # Design Model
 
-Design Model e um editor web open-source para criar, adaptar e exportar templates visuais de projetos digitais. Ele foi pensado para quem precisa transformar uma ideia em uma tela apresentavel rapidamente: dashboards, catalogos, fluxos mobile, propostas e layouts conceituais.
+Design Model é um editor web open-source para criar, adaptar e exportar templates visuais de projetos digitais. Ele foi pensado para quem precisa transformar uma ideia em uma tela apresentável rapidamente: dashboards, catálogos, fluxos mobile, propostas e layouts conceituais.
 
-O projeto combina uma biblioteca inicial de templates com um canvas editavel, camadas selecionaveis, painel de propriedades e exportacao em formatos simples para validacao ou inicio de implementacao.
+O projeto combina uma biblioteca inicial de templates com um canvas editável, camadas selecionáveis, painel de propriedades, automação local para agentes de IA e exportação em formatos simples para validação ou início de implementação.
 
 ## Links
 
@@ -25,20 +25,31 @@ Principios do produto:
 
 - Galeria local de templates iniciais.
 - Templates para dashboard, catalogo e fluxo mobile.
-- Criacao de template em branco para montar uma composicao do zero.
+- Criação de template em branco para montar uma composição do zero.
 - Canvas com zoom, grid visual e selecao por clique ou teclado.
 - Manipulacao direta no canvas: arrastar camadas e redimensionar por alcas.
 - Snap de grade ativavel e movimento fino por teclado.
-- Presets de canvas para desktop, tablet, mobile, square e story.
+- Área de trabalho ampla ao redor do canvas, com scroll para navegação.
+- Preset `Área livre` com canvas 2560x1600, comando rápido para expandir o canvas atual e dimensões customizadas até 8192px.
+- Botão para enquadrar o canvas automaticamente na área visível.
+- Presets de canvas para área livre, desktop, tablet, mobile, square, story e dimensões customizadas.
 - Camadas de texto, imagem, formas e grupos.
-- Inspector para editar nome, texto, posicao, tamanho, cor, raio, fonte, peso e alinhamento.
-- Adicao de novas camadas de texto, retangulo, elipse e imagem.
+- Inspector para editar nome, texto, posição, tamanho, cor, borda, opacidade, raio, fonte, peso e alinhamento.
+- Edição de URL, texto alternativo e encaixe de imagens.
+- Ações rápidas para alinhar camadas ao canvas e alterar ordem visual.
+- Edição de fundo e tamanho da grade do canvas.
+- Adição de novas camadas de texto, retângulo, elipse e imagem.
 - Alternar visibilidade de camadas.
+- Bloquear camadas para evitar edicoes acidentais.
+- Sidebar esquerda recolhível com controle no próprio painel.
+- Atalhos de teclado para alternar snap, bloquear, duplicar e excluir camadas.
 - Duplicar e excluir camadas.
 - Duplicar, excluir e resetar templates locais.
 - Persistencia em `localStorage`.
 - Exportacao do template atual em JSON.
+- Importacao de JSON exportado pelo app.
 - Exportacao de CSS baseado em tokens, canvas e camadas.
+- API local `window.designModelAgent` para automações e agentes de IA controlarem o editor.
 - Interface React/Vite responsiva para uso em desktop e validacao visual.
 
 ## Preview textual
@@ -57,8 +68,17 @@ Exemplo de fluxo:
 4. Arraste a camada no canvas ou redimensione pelas alcas.
 5. Use Snap e setas do teclado para ajustes precisos.
 6. Ajuste texto, medidas, cores e estilo no inspector.
-7. Duplique uma camada ou o template para criar variacoes.
-8. Exporte o resultado em JSON ou CSS.
+7. Recolha a sidebar esquerda pelo próprio painel quando precisar de mais área de edição.
+8. Bloqueie camadas que nao devem ser movidas ou editadas.
+9. Use `Área livre`, `Enquadrar` ou defina dimensões customizadas de canvas quando os presets não bastarem.
+10. Exporte o resultado em JSON ou CSS, e importe JSONs salvos quando quiser continuar.
+
+Atalhos uteis:
+
+- `S`: alterna Snap.
+- `L`: bloqueia ou desbloqueia a camada selecionada.
+- `Ctrl+D`: duplica a camada selecionada.
+- `Delete`: exclui a camada selecionada quando ela nao esta bloqueada.
 
 ## Stack
 
@@ -131,6 +151,7 @@ src/
     exporters.ts             # Exportacao JSON/CSS
     layerGeometry.ts         # Snap, clamp, movimento e resize de camadas
     templateFactory.ts       # Criacao de templates em branco
+    templateImport.ts        # Validacao e normalizacao de JSON importado
     templateSeed.ts          # Templates iniciais
     templateStore.ts         # Persistencia local e operacoes de template
     templateTypes.ts         # Tipos de templates, canvas, tokens e camadas
@@ -156,6 +177,12 @@ O exportador CSS gera:
 - variaveis CSS a partir dos tokens;
 - classe raiz do template com dimensoes e background;
 - classes absolutas para cada camada renderizavel.
+
+## Automação por agentes
+
+O editor expõe uma API local no navegador em `window.designModelAgent`. Ela permite selecionar templates, criar camadas, aplicar patches validados, alinhar camadas, ajustar canvas e exportar JSON/CSS sem backend.
+
+Veja [docs/AGENT_API.md](./docs/AGENT_API.md) para o contrato completo.
 
 ## Deploy na Vercel
 

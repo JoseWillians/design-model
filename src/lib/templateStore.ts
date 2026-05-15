@@ -1,4 +1,5 @@
 import { seedTemplates } from "./templateSeed";
+import { parseTemplateImport } from "./templateImport";
 import type { DevicePreset, TemplateCanvas, TemplateCollection, TemplateDocument } from "./templateTypes";
 
 const STORAGE_KEY = "design-model.templates.v1";
@@ -17,11 +18,13 @@ const hasLocalStorage = () => typeof window !== "undefined" && typeof window.loc
 const cloneTemplate = (template: TemplateDocument): TemplateDocument => JSON.parse(JSON.stringify(template));
 
 const inferCanvasPreset = (canvas: Pick<TemplateCanvas, "width" | "height">): DevicePreset => {
+  if (canvas.width === 2560 && canvas.height === 1600) return "workspace";
+  if (canvas.width === 1440 && canvas.height === 1024) return "desktop";
   if (canvas.width === 390 && canvas.height === 844) return "mobile";
   if (canvas.width === 834 && canvas.height === 1112) return "tablet";
   if (canvas.width === 1080 && canvas.height === 1080) return "square";
   if (canvas.width === 1080 && canvas.height === 1920) return "story";
-  return "desktop";
+  return "custom";
 };
 
 const normalizeTemplate = (template: TemplateDocument): TemplateDocument => {
@@ -119,6 +122,28 @@ export const createTemplate = (input: TemplateInput): TemplateDocument => {
   });
 
   return cloneTemplate(template);
+};
+
+export const importTemplateDocument = (input: unknown): { ok: true; template: TemplateDocument } | { ok: false; error: string } => {
+  const parsed = parseTemplateImport(input);
+
+  if (!parsed.ok) {
+    return parsed;
+  }
+
+  const imported = createTemplate({
+    ...parsed.template,
+    metadata: {
+      ...parsed.template.metadata,
+      id: undefined,
+      name: `${parsed.template.metadata.name} importado`,
+      status: "draft",
+      createdAt: undefined,
+      updatedAt: undefined,
+    },
+  });
+
+  return { ok: true, template: imported };
 };
 
 export const updateTemplate = (

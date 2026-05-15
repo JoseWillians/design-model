@@ -20,6 +20,13 @@ export interface CreateBlankTemplateOptions {
 }
 
 const presetCanvasDefaults: Record<BlankTemplatePreset, TemplateCanvas> = {
+  workspace: {
+    width: 2560,
+    height: 1600,
+    preset: "workspace",
+    background: defaultTemplateTokens.colors.canvas,
+    gridSize: 8,
+  },
   desktop: {
     width: 1440,
     height: 1024,
@@ -53,6 +60,13 @@ const presetCanvasDefaults: Record<BlankTemplatePreset, TemplateCanvas> = {
     height: 1920,
     preset: "story",
     background: defaultTemplateTokens.colors.surface,
+    gridSize: 8,
+  },
+  custom: {
+    width: 2560,
+    height: 1600,
+    preset: "custom",
+    background: defaultTemplateTokens.colors.canvas,
     gridSize: 8,
   },
 };

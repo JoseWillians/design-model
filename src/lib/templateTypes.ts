@@ -8,7 +8,7 @@ export type TemplateCategory =
 
 export type TemplateStatus = "draft" | "published";
 
-export type DevicePreset = "desktop" | "tablet" | "mobile" | "square" | "story";
+export type DevicePreset = "workspace" | "desktop" | "tablet" | "mobile" | "square" | "story" | "custom";
 
 export type LayerType = "frame" | "group" | "text" | "shape" | "image";
 

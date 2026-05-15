@@ -6,6 +6,8 @@ Este roadmap organiza a evolucao publica do Design Model. Ele deve guiar contrib
 
 Objetivo: tornar o editor atual confiavel, compreensivel e facil de validar.
 
+- Validar importacao/exportacao de JSON em navegador.
+- Validar API local para agentes de IA em navegador.
 - Melhorar feedback visual de salvamento local.
 - Criar testes unitarios para exportacao JSON/CSS.
 - Criar testes unitarios para persistencia local.
@@ -20,11 +22,8 @@ Objetivo: tornar o editor atual confiavel, compreensivel e facil de validar.
 
 Objetivo: facilitar criacao, reuso e organizacao de modelos.
 
-- Importar template a partir de JSON.
-- Permitir dimensoes customizadas de canvas alem dos presets atuais.
 - Editar metadados do template: nome, descricao, categoria e tags.
 - Adicionar filtros por categoria e busca textual.
-- Adicionar presets de canvas para desktop, tablet, mobile, square e story.
 - Permitir ordenar ou agrupar camadas.
 - Criar exemplos publicos de templates por caso de uso.
 
@@ -34,13 +33,25 @@ Objetivo: dar mais controle sem perder simplicidade.
 
 - Controles de alinhamento e distribuicao.
 - Smart guides para alinhar camadas entre si.
-- Atalhos de teclado para duplicar, excluir e navegar entre camadas.
+- Atalhos de teclado para navegar entre camadas.
 - Undo/redo para operacoes principais.
 - Edicao de imagens com URL e texto alternativo.
 - Controles de borda, opacidade e sombra.
-- Bloquear e desbloquear camadas.
 - Reordenar camadas por drag and drop com alternativa acessivel.
 - Preview de diferentes tamanhos de tela.
+- Seleção múltipla e alinhamento entre camadas.
+
+## Concluido recentemente
+
+- Importar template a partir de JSON exportado pelo app.
+- Permitir dimensoes customizadas de canvas alem dos presets.
+- Sidebar esquerda recolhivel.
+- Atalhos de teclado para alternar snap, duplicar, excluir e bloquear camadas.
+- Bloquear e desbloquear camadas.
+- Presets de canvas para desktop, tablet, mobile, square e story.
+- Pasteboard amplo ao redor do canvas.
+- Ações de alinhamento, ordem visual, opacidade, borda e imagem no inspector.
+- API local `window.designModelAgent` para automações e agentes de IA.
 
 ## Futuro: compartilhamento e colaboracao leve
 
